@@ -1,0 +1,17 @@
+USER-SUPPLIED VALUES:
+prometheus:
+  ingress:
+    enabled: true
+    hosts:
+    - prometheus-cc-cloud-kube.bisolutions.uz
+    ingressClassName: nginx
+  prometheusSpec:
+    additionalScrapeConfigs:
+    - job_name: prometheus-consul-exporter
+      metrics_path: /metrics
+      static_configs:
+      - targets:
+        - prometheus-consul-exporter:9107
+    scrapeConfigSelector:
+      matchLabels:
+        release: prom

@@ -1,0 +1,34 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prom-kube-stack
+  namespace: monitoring
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: prom-kube-stack
+      interval: 5m
+      sourceRef:
+        kind: HelmRepository
+        name: prom-kube-stack-charts
+        namespace: monitoring
+      version: 1.9.0
+  values:
+    USER-SUPPLIED VALUES: null
+    prometheus:
+      ingress:
+        enabled: true
+        hosts:
+        - prometheus-cc-cloud-kube.bisolutions.uz
+        ingressClassName: nginx
+      prometheusSpec:
+        additionalScrapeConfigs:
+        - job_name: prometheus-consul-exporter
+          metrics_path: /metrics
+          static_configs:
+          - targets:
+            - prometheus-consul-exporter:9107
+        scrapeConfigSelector:
+          matchLabels:
+            release: prom
