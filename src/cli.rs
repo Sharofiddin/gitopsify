@@ -23,9 +23,11 @@ pub enum Commands {
         #[arg(short, long)]
         chart: String,
         #[arg(short, long)]
+        release: String,
+        #[arg(short, long)]
         output: String,
         #[arg(short, long)]
-        repo_url: String,
+        url: String,
     }
 }
 

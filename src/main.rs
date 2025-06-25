@@ -13,8 +13,8 @@ fn main() -> anyhow::Result<()> {
         Commands::Detect { namespace } => {
             detect::run(&namespace)?;
         }
-        Commands::Convert {namespace, chart, output, repo_url } => {
-            convert::run(&namespace, &chart, &output, &repo_url)?;
+        Commands::Convert {namespace, chart,release, output, url } => {
+            convert::run(&namespace, &chart, &release, &output, &url)?;
         }
     }
 

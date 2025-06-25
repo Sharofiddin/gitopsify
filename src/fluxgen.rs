@@ -16,14 +16,25 @@ struct Metadata {
 }
 
 #[derive(Serialize)]
+struct ChartRef {
+    kind: String,
+    name: String,
+    namespace: String,
+}
+
+#[derive(Serialize)]
 struct Spec {
     interval: String,
-    chart: Chart,
+    chartRef: ChartRef,
+    releaseName: String,
     values: serde_yaml::Value,
 }
 
 #[derive(Serialize)]
 struct Chart {
+    apiVersion: String,
+    kind: String,
+    metadata: Metadata,
     spec: ChartSpec,
 }
 
@@ -31,7 +42,6 @@ struct Chart {
 struct SourceRef {
     kind: String,
     name: String,
-    namespace: String,
 }
 
 #[derive(Serialize)]
@@ -55,13 +65,15 @@ struct HelmRepoSpec {
     interval: String,
     url: String,
 }
-
-pub fn generate_helmrepo(chart_name: &str, namespace: &str,  repo_url: &str) -> String {
+pub fn get_repo_name(name: &str) -> String {
+  format!("{}-repo", name)
+}
+pub fn generate_helmrepo(name: &str, namespace: &str,  repo_url: &str) -> String {
     let helmrepo = HelmRepository {
         apiVersion: "source.toolkit.fluxcd.io/v1".into(),
         kind: "HelmRepository".into(),
         metadata: Metadata {
-                name: format!("{}-repo", chart_name),
+                name: get_repo_name(&name),
                 namespace: namespace.into(),
         },
        spec: HelmRepoSpec {
@@ -73,7 +85,7 @@ pub fn generate_helmrepo(chart_name: &str, namespace: &str,  repo_url: &str) -> 
     serde_yaml::to_string(&helmrepo).unwrap()
 }
 
-pub fn generate_helmrelease(chart_name: &str, namespace: &str, values_yaml: &str) -> String {
+pub fn generate_helmrelease(chart: &str, name: &str, namespace: &str, values_yaml: &str) -> String {
     let values: serde_yaml::Value = serde_yaml::from_str(values_yaml).unwrap_or_else(|_| { 
         serde_yaml::Value::Null
     });
@@ -82,23 +94,17 @@ pub fn generate_helmrelease(chart_name: &str, namespace: &str, values_yaml: &str
         apiVersion: "helm.toolkit.fluxcd.io/v2".into(),
         kind: "HelmRelease".into(),
         metadata: Metadata {
-            name: chart_name.into(),
+            name: name.into(),
             namespace: namespace.into(),
         },
         spec: Spec {
             interval: "5m".into(),
-            chart: Chart {
-                spec: ChartSpec {
-                    interval: "5m".into(),
-                    chart: chart_name.into(),
-                    version: "1.9.0".into(), // Fixme: Hardcoded!!
-                    sourceRef: SourceRef {
-                        namespace: namespace.into(),
-                        kind: "HelmRepository".into(),
-                        name: format!("{}-charts", chart_name),
-                    },
-                },
+            chartRef: ChartRef {
+              kind: "HelmChart".into(),
+              name: chart.into(),
+              namespace: namespace.into(),
             },
+            releaseName: name.into(),
             values,
         },
     };
@@ -106,4 +112,23 @@ pub fn generate_helmrelease(chart_name: &str, namespace: &str, values_yaml: &str
     serde_yaml::to_string(&helmrelease).unwrap()
 }
 
-
+pub fn generate_helmchart(name: &str, namespace: &str, version: &str) -> String {
+        let helm_chart =  Chart {
+                apiVersion: "source.toolkit.fluxcd.io/v1".into(),
+                kind: "HelmChart".into(),
+                metadata: Metadata {
+                    name: name.into(),
+                    namespace: namespace.into(),
+                },
+                spec: ChartSpec {
+                    interval: "5m".into(),
+                    chart: name.into(),
+                    version: version.into(),
+                    sourceRef: SourceRef {
+                        kind: "HelmRepository".into(),
+                        name: get_repo_name(&name),
+                    },
+                },
+            };
+        serde_yaml::to_string(&helm_chart).unwrap()
+}
