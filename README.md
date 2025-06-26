@@ -9,6 +9,6 @@ build:
  
 Generating helmresources from existing release:
 ```shell
-   gitopsify --namespace <namespace> --chart <chart name> --output ./output --url <helm-repo-url>  --release <relaese_name>
+   [gitopsify](gitopsify) --namespace <namespace> --chart <chart name> --output ./output --url <helm-repo-url>  --release <relaese_name>
 ```
 
