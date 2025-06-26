@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "gitopsify")]
-#[command(about = "Convert k8s components to FluxCD GitOps manifests")]
+#[command(name = "gitopsify",
+    version = version(),
+    author = "pardayev.sharofiddin@gmail.com",
+    about = "Convert k8s components to FluxCD GitOps manifests")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
@@ -31,3 +33,7 @@ pub enum Commands {
     }
 }
 
+fn version() -> &'static str {
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+    VERSION
+}
